@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Propuesta</title>
+    <title>Valentine Proposal</title>
     <style>
         body {
             margin: 0;
@@ -23,51 +23,42 @@
             border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
             width: 90%;
-            max-width: 500px; 
+            max-width: 450px;
             z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         h1 {
             color: #333;
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            margin: 1rem 0;
             font-weight: 500;
         }
 
-        /* Contenedor para los pares de GIFs */
-        .gif-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 1.5rem;
-        }
-
-        .gif-container img {
-            width: 160px; /* Tamaño ajustado para que quepan dos */
+        /* GIFs con su tamaño original (auto) */
+        img {
+            max-width: 100%;
             height: auto;
             border-radius: 8px;
         }
 
-        /* GIF único para cuando se mueve el botón */
-        .gif-single {
-            width: 200px;
-            height: auto;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-        }
+        .gif-top { margin-bottom: 1rem; }
+        .gif-bottom { margin-top: 1rem; }
 
         .btn-group {
             display: flex;
             justify-content: center;
             gap: 20px;
-            min-height: 50px;
+            min-height: 60px;
             align-items: center;
+            width: 100%;
         }
 
         button {
             padding: 12px 28px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -77,6 +68,7 @@
         #yes-btn {
             background-color: #000;
             color: white;
+            z-index: 1001; /* Siempre por encima del gif que crece */
         }
 
         #no-btn {
@@ -89,32 +81,38 @@
         .hidden {
             display: none;
         }
+
+        /* Contenedor para el gif que crece */
+        #moviendo-container {
+            transition: transform 0.3s ease;
+        }
     </style>
 </head>
 <body>
 
     <div id="main-card" class="card">
-        <h1 id="main-title">¿Quieres ser mi San Valentin?</h1>
+        <img src="inicio1.gif" alt="top" class="gif-top">
         
-        <div id="inicio-gifs" class="gif-container">
-            <img src="inicio1.gif" alt="inicio 1">
-            <img src="inicio2.gif" alt="inicio 2">
+        <h1>Will you be my Valentine?</h1>
+        
+        <div id="inicio-gifs-bottom">
+            <img src="inicio2.gif" alt="bottom" class="gif-bottom">
         </div>
 
-        <img id="moviendo-gif" class="gif-single hidden" src="moviendo.gif" alt="sorpresa">
+        <div id="moviendo-container" class="hidden">
+            <img src="moviendo.gif" alt="moving" class="gif-bottom">
+        </div>
         
         <div class="btn-group">
-            <button id="yes-btn">Si</button>
+            <button id="yes-btn">Yes</button>
             <button id="no-btn">No</button>
         </div>
     </div>
 
     <div id="success-card" class="card hidden">
-        <h1>Sabia que dirias que si</h1>
-        <div class="gif-container">
-            <img src="si1.gif" alt="exito 1">
-            <img src="si2.gif" alt="exito 2">
-        </div>
+        <img src="si1.gif" alt="success 1" class="gif-top">
+        <h1>I knew you would say yes!</h1>
+        <img src="si2.gif" alt="success 2" class="gif-bottom">
     </div>
 
     <script>
@@ -123,17 +121,24 @@
         const mainCard = document.getElementById('main-card');
         const successCard = document.getElementById('success-card');
         
-        const inicioGifs = document.getElementById('inicio-gifs');
-        const moviendoGif = document.getElementById('moviendo-gif');
+        const inicioBottom = document.getElementById('inicio-gifs-bottom');
+        const moviendoContainer = document.getElementById('moviendo-container');
 
+        let scaleValue = 1;
         let yaSeMovio = false;
 
         const moverBoton = () => {
-            // La primera vez que se intenta dar a NO:
+            // Logic to switch GIFs on first move
             if (!yaSeMovio) {
-                inicioGifs.classList.add('hidden'); // Oculta los 2 del inicio
-                moviendoGif.classList.remove('hidden'); // Muestra el de movimiento
+                inicioBottom.classList.add('hidden');
+                moviendoContainer.classList.remove('hidden');
                 yaSeMovio = true;
+            } else {
+                // Increase scale each time but keep it reasonable
+                if (scaleValue < 1.8) { 
+                    scaleValue += 0.1;
+                    moviendoContainer.style.transform = `scale(${scaleValue})`;
+                }
             }
 
             noBtn.style.position = 'absolute';
