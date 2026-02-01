@@ -14,7 +14,7 @@
             align-items: center;
             background-color: #f8f9fa;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            overflow: hidden; /* Evita el scroll global */
+            overflow: hidden;
         }
 
         .card {
@@ -22,49 +22,57 @@
             background: white;
             padding: 1.5rem;
             border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             width: 90%;
             max-width: 400px;
-            max-height: 95vh; /* Limita la altura de la tarjeta al 95% de la pantalla */
-            overflow-y: auto; /* Si el contenido crece mucho, permite scroll dentro de la tarjeta */
-            z-index: 10;
+            position: relative; /* Referencia para el gif que flota */
             display: flex;
             flex-direction: column;
             align-items: center;
-            box-sizing: border-box;
         }
 
         h1 {
             color: #333;
             font-size: 1.4rem;
-            margin: 0.8rem 0;
-            font-weight: 500;
-            flex-shrink: 0; /* Evita que el texto se comprima */
+            margin: 1rem 0;
+            z-index: 10; /* Por encima del gif que crece */
         }
 
-        /* Contenedores de imagen con límites estrictos */
-        .img-container {
+        .img-wrapper {
             width: 100%;
+            height: 180px;
             display: flex;
             justify-content: center;
-            flex-shrink: 1; /* Permite que la imagen se reduzca si falta espacio */
-            min-height: 0;
+            align-items: center;
+            position: relative;
         }
 
         img {
             max-width: 100%;
-            max-height: 200px; /* Limite de altura para que no empuje los botones */
-            object-fit: contain; /* Mantiene la proporción sin deformar */
+            max-height: 100%;
+            object-fit: contain;
             border-radius: 8px;
+        }
+
+        /* El GIF que aparece al mover el NO */
+        #moviendo-gif {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.3s ease;
+            z-index: 5; /* Debajo del texto pero encima de los gifs base */
+            pointer-events: none; /* No bloquea clicks */
+            opacity: 0;
         }
 
         .btn-group {
             display: flex;
             justify-content: center;
             gap: 20px;
-            padding: 1rem 0;
+            padding-top: 1.5rem;
             width: 100%;
-            flex-shrink: 0; /* Asegura que los botones no se achiquen */
+            z-index: 20; /* Siempre al frente de todo */
         }
 
         button {
@@ -76,47 +84,24 @@
             font-weight: 500;
         }
 
-        #yes-btn {
-            background-color: #000;
-            color: white;
-            z-index: 1001;
-        }
+        #yes-btn { background-color: #000; color: white; }
+        #no-btn { background-color: #e9ecef; color: #495057; position: relative; }
 
-        #no-btn {
-            background-color: #e9ecef;
-            color: #495057;
-            position: relative;
-            z-index: 1000;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        /* Contenedor del gif que crece con limite */
-        #moviendo-container {
-            transition: transform 0.3s ease;
-            max-height: 200px;
-            display: flex;
-            justify-content: center;
-        }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
     <div id="main-card" class="card">
-        <div class="img-container">
+        <div class="img-wrapper">
             <img src="inicio1.gif" alt="top">
+            <img id="moviendo-gif" src="moviendo.gif" alt="moving">
         </div>
         
         <h1>Will you be my Valentine?</h1>
         
-        <div id="inicio-gifs-bottom" class="img-container">
+        <div class="img-wrapper">
             <img src="inicio2.gif" alt="bottom">
-        </div>
-
-        <div id="moviendo-container" class="img-container hidden">
-            <img src="moviendo.gif" alt="moving">
         </div>
         
         <div class="btn-group">
@@ -126,13 +111,9 @@
     </div>
 
     <div id="success-card" class="card hidden">
-        <div class="img-container">
-            <img src="si1.gif" alt="success 1">
-        </div>
+        <div class="img-wrapper"><img src="si1.gif" alt="s1"></div>
         <h1>I knew you would say yes!</h1>
-        <div class="img-container">
-            <img src="si2.gif" alt="success 2">
-        </div>
+        <div class="img-wrapper"><img src="si2.gif" alt="s2"></div>
     </div>
 
     <script>
@@ -140,36 +121,31 @@
         const yesBtn = document.getElementById('yes-btn');
         const mainCard = document.getElementById('main-card');
         const successCard = document.getElementById('success-card');
-        
-        const inicioBottom = document.getElementById('inicio-gifs-bottom');
-        const moviendoContainer = document.getElementById('moviendo-container');
+        const moviendoGif = document.getElementById('moviendo-gif');
 
-        let scaleValue = 1;
+        let scaleValue = 0.5; // Empieza pequeño
         let yaSeMovio = false;
 
         const moverBoton = () => {
             if (!yaSeMovio) {
-                inicioBottom.classList.add('hidden');
-                moviendoContainer.classList.remove('hidden');
+                moviendoGif.style.opacity = "1";
+                moviendoGif.style.transform = "translate(-50%, -50%) scale(0.5)";
                 yaSeMovio = true;
             } else {
-                if (scaleValue < 1.5) { // Bajé un poco el límite de escala para seguridad
-                    scaleValue += 0.1;
-                    moviendoContainer.style.transform = `scale(${scaleValue})`;
+                // Crece un poco cada vez, máximo hasta tapar el área de imagen (scale 1.5)
+                if (scaleValue < 1.5) {
+                    scaleValue += 0.15;
+                    moviendoGif.style.transform = `translate(-50%, -50%) scale(${scaleValue})`;
                 }
             }
 
-            noBtn.style.position = 'absolute';
-
-            // El botón ahora se mueve en TODA la pantalla para que no estorbe
+            // Movimiento del botón por toda la pantalla
+            noBtn.style.position = 'fixed'; 
             const maxX = window.innerWidth - noBtn.offsetWidth - 20;
             const maxY = window.innerHeight - noBtn.offsetHeight - 20;
-
-            const randomX = Math.floor(Math.random() * maxX);
-            const randomY = Math.floor(Math.random() * maxY);
-
-            noBtn.style.left = `${randomX}px`;
-            noBtn.style.top = `${randomY}px`;
+            
+            noBtn.style.left = Math.floor(Math.random() * maxX) + 'px';
+            noBtn.style.top = Math.floor(Math.random() * maxY) + 'px';
         };
 
         noBtn.addEventListener('mouseenter', moverBoton);
